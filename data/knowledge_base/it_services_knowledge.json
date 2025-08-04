@@ -1,0 +1,102 @@
+{
+  "categories": [
+    {
+      "name": "Web Development",
+      "keywords": ["website", "web app", "frontend", "backend", "responsive", "mobile-friendly"],
+      "pain_points": [
+        "Outdated website design",
+        "Poor mobile responsiveness",
+        "Slow loading times",
+        "Poor user experience",
+        "No content management system"
+      ],
+      "solutions": [
+        "Modern responsive web design",
+        "Performance optimization",
+        "CMS implementation",
+        "Mobile-first development",
+        "User experience improvements"
+      ],
+      "value_indicators": ["high traffic", "e-commerce", "lead generation", "brand presence"]
+    },
+    {
+      "name": "Cloud Services",
+      "keywords": ["cloud", "aws", "azure", "migration", "hosting", "scalability"],
+      "pain_points": [
+        "On-premise infrastructure costs",
+        "Scalability limitations",
+        "Backup and disaster recovery issues",
+        "Security vulnerabilities",
+        "Maintenance overhead"
+      ],
+      "solutions": [
+        "Cloud migration strategy",
+        "Auto-scaling solutions",
+        "Managed cloud services",
+        "Backup automation",
+        "Cloud security implementation"
+      ],
+      "value_indicators": ["growing business", "remote work", "data storage needs"]
+    },
+    {
+      "name": "Cybersecurity",
+      "keywords": ["security", "ssl", "firewall", "compliance", "data protection"],
+      "pain_points": [
+        "Data breach risks",
+        "Compliance requirements",
+        "Outdated security measures",
+        "Lack of security monitoring",
+        "Employee security training"
+      ],
+      "solutions": [
+        "Security audits and assessments",
+        "Multi-factor authentication",
+        "Security monitoring systems",
+        "Compliance consulting",
+        "Employee training programs"
+      ],
+      "value_indicators": ["financial data", "customer information", "regulatory industry"]
+    },
+    {
+      "name": "Digital Transformation",
+      "keywords": ["automation", "digital", "workflow", "efficiency", "modernization"],
+      "pain_points": [
+        "Manual processes",
+        "Inefficient workflows",
+        "Poor data integration",
+        "Legacy system limitations",
+        "Lack of analytics"
+      ],
+      "solutions": [
+        "Process automation",
+        "System integration",
+        "Data analytics implementation",
+        "Workflow optimization",
+        "Digital strategy consulting"
+      ],
+      "value_indicators": ["growth phase", "multiple systems", "manual processes"]
+    }
+  ],
+  "industry_profiles": {
+    "healthcare": {
+      "common_technologies": ["EMR systems", "HIPAA compliance tools", "telemedicine platforms"],
+      "typical_pain_points": ["patient data security", "system interoperability", "regulatory compliance"],
+      "high_value_services": ["HIPAA compliance consulting", "EMR integration", "telehealth solutions"]
+    },
+    "finance": {
+      "common_technologies": ["payment gateways", "CRM systems", "accounting software"],
+      "typical_pain_points": ["regulatory compliance", "data security", "legacy system integration"],
+      "high_value_services": ["fintech development", "compliance automation", "security audits"]
+    },
+    "retail": {
+      "common_technologies": ["e-commerce platforms", "POS systems", "inventory management"],
+      "typical_pain_points": ["omnichannel integration", "inventory tracking", "customer experience"],
+      "high_value_services": ["e-commerce development", "inventory automation", "customer analytics"]
+    },
+    "manufacturing": {
+      "common_technologies": ["ERP systems", "IoT sensors", "automation tools"],
+      "typical_pain_points": ["production efficiency", "supply chain visibility", "quality control"],
+      "high_value_services": ["IoT implementation", "ERP integration", "automation solutions"]
+    }
+  }
+}

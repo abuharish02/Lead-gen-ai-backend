@@ -1,0 +1,35 @@
+
+{
+  "templates": [
+    {
+      "id": "generic_intro",
+      "name": "Generic Introduction",
+      "subject": "Quick question about {{company_name}}'s digital presence",
+      "body": "Hi {{contact_name}},\n\nI came across {{company_name}} and was impressed by {{positive_observation}}. \n\nI noticed {{pain_point_observation}} and wondered if you've considered {{suggested_solution}}.\n\nWe've helped similar {{industry}} companies {{success_metric}}. Would you be open to a brief conversation about how we could help {{company_name}} achieve similar results?\n\nBest regards,\n{{sender_name}}",
+      "variables": ["company_name", "contact_name", "positive_observation", "pain_point_observation", "suggested_solution", "industry", "success_metric", "sender_name"]
+    },
+    {
+      "id": "website_improvement",
+      "name": "Website Improvement Focus",
+      "subject": "Thoughts on improving {{company_name}}'s website performance",
+      "body": "Hello {{contact_name}},\n\nI was reviewing {{company_name}}'s website and noticed some opportunities that could significantly impact your business:\n\n• {{improvement_1}}\n• {{improvement_2}}\n• {{improvement_3}}\n\nWe recently helped {{similar_company}} in the {{industry}} sector achieve {{specific_result}}.\n\nWould you be interested in a 15-minute call to discuss how these improvements could help {{company_name}}?\n\nBest,\n{{sender_name}}",
+      "variables": ["company_name", "contact_name", "improvement_1", "improvement_2", "improvement_3", "similar_company", "industry", "specific_result", "sender_name"]
+    },
+    {
+      "id": "technology_upgrade",
+      "name": "Technology Modernization",
+      "subject": "Modernizing {{company_name}}'s technology stack",
+      "body": "Hi {{contact_name}},\n\nI noticed {{company_name}} is using {{current_technology}}, which presents some great opportunities for modernization.\n\nUpgrading to {{recommended_technology}} could help you:\n- {{benefit_1}}\n- {{benefit_2}}\n- {{benefit_3}}\n\nWe specialize in {{technology_area}} modernization and have helped companies like yours {{achievement}}.\n\nInterested in learning more?\n\nRegards,\n{{sender_name}}",
+      "variables": ["company_name", "contact_name", "current_technology", "recommended_technology", "benefit_1", "benefit_2", "benefit_3", "technology_area", "achievement", "sender_name"]
+    }
+  ],
+  "follow_up_templates": [
+    {
+      "id": "follow_up_1",
+      "name": "First Follow-up",
+      "subject": "Re: {{original_subject}}",
+      "body": "Hi {{contact_name}},\n\nI wanted to follow up on my previous email about {{main_topic}}.\n\nI understand you're likely busy, but given {{urgency_factor}}, I thought this might be worth a quick conversation.\n\nWould this week or next work better for a brief call?\n\nBest,\n{{sender_name}}",
+      "variables": ["contact_name", "original_subject", "main_topic", "urgency_factor", "sender_name"]
+    }
+  ]
+}

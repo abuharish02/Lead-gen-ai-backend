@@ -1,0 +1,39 @@
+{
+  "digital_maturity_benchmarks": {
+    "startup": {
+      "average_score": 6.5,
+      "key_factors": ["modern tech stack", "mobile optimization", "basic analytics"],
+      "improvement_areas": ["security", "scalability", "performance"]
+    },
+    "small_business": {
+      "average_score": 5.8,
+      "key_factors": ["basic web presence", "social media", "contact forms"],
+      "improvement_areas": ["mobile optimization", "security", "automation"]
+    },
+    "medium_business": {
+      "average_score": 7.2,
+      "key_factors": ["established web presence", "CRM integration", "basic security"],
+      "improvement_areas": ["cloud migration", "advanced analytics", "automation"]
+    },
+    "enterprise": {
+      "average_score": 8.1,
+      "key_factors": ["advanced systems", "security protocols", "data analytics"],
+      "improvement_areas": ["legacy modernization", "AI integration", "optimization"]
+    }
+  },
+  "industry_averages": {
+    "technology": 8.5,
+    "finance": 7.8,
+    "healthcare": 6.9,
+    "retail": 7.2,
+    "manufacturing": 6.1,
+    "education": 5.8,
+    "construction": 5.2,
+    "professional_services": 6.8
+  },
+  "urgency_indicators": {
+    "high": ["security vulnerabilities", "compliance issues", "major performance problems"],
+    "medium": ["outdated design", "mobile issues", "SEO problems"],
+    "low": ["minor improvements", "feature additions", "optimization"]
+  }
+}

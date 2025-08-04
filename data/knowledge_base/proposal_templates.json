@@ -1,0 +1,38 @@
+{
+  "executive_summary": {
+    "template": "Based on our analysis of {company_name}, we've identified key opportunities to enhance your {primary_focus_area}. Our proposed solution will address {main_pain_points} while delivering {expected_outcomes}.",
+    "sections": [
+      "Current State Assessment",
+      "Identified Opportunities",
+      "Proposed Solutions",
+      "Expected Outcomes",
+      "Investment & Timeline"
+    ]
+  },
+  "technical_solutions": {
+    "web_development": {
+      "description": "Complete website redesign and development",
+      "deliverables": ["Responsive design", "CMS implementation", "Performance optimization", "SEO optimization"],
+      "timeline": "8-12 weeks",
+      "investment_range": "$15,000 - $50,000"
+    },
+    "cloud_migration": {
+      "description": "Cloud infrastructure migration and optimization",
+      "deliverables": ["Cloud architecture design", "Data migration", "Security implementation", "Monitoring setup"],
+      "timeline": "6-10 weeks",
+      "investment_range": "$25,000 - $75,000"
+    },
+    "security_audit": {
+      "description": "Comprehensive cybersecurity assessment and implementation",
+      "deliverables": ["Security audit report", "Vulnerability remediation", "Policy development", "Staff training"],
+      "timeline": "4-8 weeks",
+      "investment_range": "$10,000 - $30,000"
+    },
+    "digital_transformation": {
+      "description": "End-to-end digital transformation strategy",
+      "deliverables": ["Process automation", "System integration", "Analytics implementation", "Change management"],
+      "timeline": "12-20 weeks",
+      "investment_range": "$50,000 - $150,000"
+    }
+  }
+}

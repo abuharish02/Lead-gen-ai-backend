@@ -1,0 +1,46 @@
+{
+  "cms_platforms": {
+    "wordpress": {
+      "market_share": 43.2,
+      "strengths": ["flexibility", "plugin ecosystem", "SEO friendly"],
+      "common_issues": ["security vulnerabilities", "performance", "maintenance"],
+      "upgrade_opportunities": ["custom themes", "performance optimization", "security hardening"]
+    },
+    "shopify": {
+      "market_share": 10.3,
+      "strengths": ["e-commerce focused", "easy setup", "payment integration"],
+      "common_issues": ["customization limitations", "transaction fees", "SEO limitations"],
+      "upgrade_opportunities": ["custom apps", "advanced integrations", "performance optimization"]
+    },
+    "drupal": {
+      "market_share": 2.1,
+      "strengths": ["enterprise features", "security", "scalability"],
+      "common_issues": ["complexity", "maintenance costs", "learning curve"],
+      "upgrade_opportunities": ["module development", "migration assistance", "training"]
+    }
+  },
+  "hosting_providers": {
+    "shared_hosting": {
+      "indicators": ["cpanel", "hostgator", "bluehost"],
+      "typical_issues": ["performance limitations", "security concerns", "scalability"],
+      "upgrade_path": "VPS or cloud hosting migration"
+    },
+    "cloud_hosting": {
+      "indicators": ["aws", "azure", "google cloud", "cloudflare"],
+      "typical_issues": ["cost optimization", "configuration complexity", "monitoring"],
+      "upgrade_path": "managed services, optimization consulting"
+    }
+  },
+  "frameworks": {
+    "react": {
+      "version_indicators": ["react 16", "react 17", "react 18"],
+      "common_issues": ["performance optimization", "SEO challenges", "bundle size"],
+      "opportunities": ["server-side rendering", "performance tuning", "modern patterns"]
+    },
+    "angular": {
+      "version_indicators": ["angularjs", "angular 2+"],
+      "common_issues": ["migration needs", "performance", "complexity"],
+      "opportunities": ["framework migration", "performance optimization", "modernization"]
+    }
+  }
+}

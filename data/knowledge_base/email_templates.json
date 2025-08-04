@@ -1,0 +1,42 @@
+{
+  "cold_outreach": {
+    "subject_lines": [
+      "Quick question about {company_name}'s {pain_point}",
+      "Helping {industry} companies with {solution}",
+      "{company_name} - {value_proposition}",
+      "5-minute chat about {company_name}'s tech stack?"
+    ],
+    "templates": [
+      {
+        "name": "pain_point_focused",
+        "subject": "Quick question about {company_name}'s {main_pain_point}",
+        "body": "Hi {contact_name},\n\nI noticed {company_name} {pain_point_observation}. We've helped similar {industry} companies {solution_benefit}.\n\nWould you be open to a brief 10-minute call to discuss how we could help {company_name} {specific_outcome}?\n\nBest regards,\n{sender_name}"
+      },
+      {
+        "name": "value_proposition",
+        "subject": "{company_name} - {value_proposition}",
+        "body": "Hello {contact_name},\n\nI came across {company_name} and was impressed by {positive_observation}. Based on what I see, there might be an opportunity to {improvement_suggestion}.\n\nWe specialize in helping {industry} companies {service_focus}. Would you be interested in a quick conversation about potential improvements?\n\nBest,\n{sender_name}"
+      }
+    ]
+  },
+  "follow_up": {
+    "templates": [
+      {
+        "name": "soft_follow_up",
+        "subject": "Following up - {company_name}",
+        "body": "Hi {contact_name},\n\nI wanted to follow up on my previous message about {company_name}'s {topic}. I understand you're probably busy, but I believe we could provide significant value in {specific_area}.\n\nWould next week work better for a brief conversation?\n\nBest regards,\n{sender_name}"
+      }
+    ]
+  },
+  "linkedin": {
+    "connection_requests": [
+      "Hi {contact_name}, I'd love to connect and share some insights about {industry} technology trends.",
+      "Hello {contact_name}, I noticed {company_name}'s work in {industry}. Would love to connect!",
+      "Hi {contact_name}, I help {industry} companies with {service_area}. Would love to connect and share insights."
+    ],
+    "messages": [
+      "Thanks for connecting! I noticed {company_name} could benefit from {solution}. Happy to share some quick insights if you're interested.",
+      "Hi {contact_name}, I saw some opportunities for {company_name} in the {area} space. Would you be open to a brief conversation?"
+    ]
+  }
+}

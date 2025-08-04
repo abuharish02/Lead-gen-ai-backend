@@ -1,0 +1,25 @@
+
+{
+  "connection_requests": [
+    {
+      "id": "industry_connection",
+      "name": "Industry-based Connection",
+      "message": "Hi {{name}}, I noticed we're both in the {{industry}} space. I'd love to connect and share insights about {{topic_of_interest}}!",
+      "variables": ["name", "industry", "topic_of_interest"]
+    },
+    {
+      "id": "company_interest",
+      "name": "Company Interest",
+      "message": "Hello {{name}}, I came across {{company_name}} and was impressed by {{company_achievement}}. Would love to connect and learn more about your work!",
+      "variables": ["name", "company_name", "company_achievement"]
+    }
+  ],
+  "messages": [
+    {
+      "id": "service_introduction",
+      "name": "Service Introduction",
+      "message": "Hi {{name}},\n\nThanks for connecting! I help {{industry}} companies like {{company_name}} with {{service_area}}.\n\nI noticed {{observation}} on your website. This could be an opportunity to {{improvement_suggestion}}.\n\nWould you be open to a brief conversation about how we could help {{company_name}} {{desired_outcome}}?",
+      "variables": ["name", "industry", "company_name", "service_area", "observation", "improvement_suggestion", "desired_outcome"]
+    }
+  ]
+}
