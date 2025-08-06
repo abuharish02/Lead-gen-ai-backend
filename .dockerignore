@@ -1,0 +1,88 @@
+# .dockerignore
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Test files
+test_results_*.json
+*.db
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*
+
+# Environment files (will be set via GCP)
+.env.local
+.env.development
+.env.production
+
+---
+
+# docker-compose.yml (for local development)
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URL=${MONGODB_URL}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL}
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=True
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+---

@@ -1,0 +1,30 @@
+# app.yaml (for Google App Engine deployment)
+runtime: python311
+
+service: website-analyzer-backend
+
+env_variables:
+  MONGODB_URL: mongodb+srv://anand1234singh76:gJRKicWZeQ4OjBf7@cluster0.rly35fe.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+  DATABASE_NAME: lead-gen-ai-db
+  GEMINI_API_KEY: AIzaSyBWezIZl-crbdE-T60bK2KgHZyhqWehUXY
+  GEMINI_MODEL: gemini-1.5-flash
+  SECRET_KEY: your-super-secret-key-change-this-in-production
+  DEBUG: "False"
+  MAX_FILE_SIZE: "52428800"
+  UPLOAD_DIR: data/uploads
+  KNOWLEDGE_BASE_DIR: data/knowledge_base
+  EMBEDDING_MODEL: sentence-transformers/all-MiniLM-L6-v2
+
+automatic_scaling:
+  min_instances: 1
+  max_instances: 10
+  target_cpu_utilization: 0.6
+
+resources:
+  cpu: 2
+  memory_gb: 4
+  disk_size_gb: 20
+
+handlers:
+- url: /.*
+  script: auto

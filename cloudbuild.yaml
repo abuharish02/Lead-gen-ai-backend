@@ -1,0 +1,28 @@
+# cloudbuild.yaml (for Google Cloud Build)
+steps:
+  # Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t', 'gcr.io/$PROJECT_ID/website-analyzer-backend:$COMMIT_SHA',
+      '-t', 'gcr.io/$PROJECT_ID/website-analyzer-backend:latest',
+      '.'
+    ]
+  
+  # Push the Docker image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/website-analyzer-backend:$COMMIT_SHA']
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/website-analyzer-backend:latest']
+
+# Store images in Container Registry
+images:
+  - 'gcr.io/$PROJECT_ID/website-analyzer-backend:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/website-analyzer-backend:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'
+
+timeout: '1200s'

@@ -1,4 +1,3 @@
-# backend/services/analyzer.py
 from typing import Dict, Any, List
 from .scraper import WebScraper
 from .gemini_client import GeminiClient
@@ -244,6 +243,6 @@ Use the provided context to make your analysis more targeted and relevant. Focus
         general_contexts = rag_analysis.get("general_context", [])
         if general_contexts:
             avg_similarity = sum(ctx.get("similarity", 0) for ctx in general_contexts) / len(general_contexts)
-            score += min(avg_similarity, 0.2)  # Cap at 0.2
+            score += min(avg_similarity, 0.2)  
         
-        return min(score, 1.0)  # Cap at 1.0
+        return min(score, 1.0)  

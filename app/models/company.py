@@ -70,3 +70,9 @@ class CompanyResponse(BaseModel):
     last_analyzed: datetime
     created_at: datetime
     updated_at: datetime
+
+
+
+
+
+    
