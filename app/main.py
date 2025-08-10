@@ -126,13 +126,23 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# CORS configuration - Allow all for debugging
+# Updated CORS configuration using settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allow_headers=["*"],
+    allow_headers=[
+        "Accept",
+        "Accept-Language", 
+        "Content-Language",
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "Origin",
+        "Access-Control-Request-Method",
+        "Access-Control-Request-Headers",
+    ],
     expose_headers=["*"],
     max_age=86400,  # Cache preflight for 24 hours
 )
@@ -143,16 +153,30 @@ async def enforce_authentication(request: Request, call_next):
     try:
         path = request.url.path
         method = request.method.upper()
+        
+        # Handle CORS preflight requests
         if method == "OPTIONS":
+            origin = request.headers.get("origin")
+            response_headers = {
+                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+                "Access-Control-Allow-Headers": "Accept, Accept-Language, Content-Language, Content-Type, Authorization, X-Requested-With, Origin",
+                "Access-Control-Max-Age": "86400",
+            }
+            
+            # Set specific origin if it's in allowed list, otherwise allow all for development
+            if origin and origin in settings.ALLOWED_ORIGINS:
+                response_headers["Access-Control-Allow-Origin"] = origin
+            elif settings.DEBUG:
+                response_headers["Access-Control-Allow-Origin"] = "*"
+            else:
+                response_headers["Access-Control-Allow-Origin"] = settings.ALLOWED_ORIGINS[0]
+                
+            response_headers["Access-Control-Allow-Credentials"] = "true"
+            
             return JSONResponse(
                 status_code=200,
                 content={"message": "CORS preflight OK"},
-                headers={
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-                    "Access-Control-Allow-Headers": "*",
-                    "Access-Control-Max-Age": "86400",
-                },
+                headers=response_headers,
             )
 
         public_paths_prefix = [
@@ -276,7 +300,8 @@ async def root():
                 "lead_detail": "GET /api/v1/leads/{id}",
                 "search_leads": "GET /api/v1/leads/search"
             },
-            "cors": "enabled_for_all_origins",
+            "cors": f"enabled_for_{len(settings.ALLOWED_ORIGINS)}_origins",
+            "allowed_origins": settings.ALLOWED_ORIGINS,
             "database": "connected" if hasattr(app.state, 'db') else "unknown"
         }
     except Exception as e:
@@ -296,15 +321,28 @@ async def simple_health():
 @app.options("/{full_path:path}")
 async def handle_options(request: Request):
     logger.info(f"🔄 CORS preflight for: {request.url.path}")
+    origin = request.headers.get("origin")
+    
+    response_headers = {
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+        "Access-Control-Allow-Headers": "Accept, Accept-Language, Content-Language, Content-Type, Authorization, X-Requested-With, Origin",
+        "Access-Control-Max-Age": "86400"
+    }
+    
+    # Set appropriate origin header
+    if origin and origin in settings.ALLOWED_ORIGINS:
+        response_headers["Access-Control-Allow-Origin"] = origin
+    elif settings.DEBUG:
+        response_headers["Access-Control-Allow-Origin"] = "*"
+    else:
+        response_headers["Access-Control-Allow-Origin"] = settings.ALLOWED_ORIGINS[0]
+        
+    response_headers["Access-Control-Allow-Credentials"] = "true"
+    
     return JSONResponse(
         status_code=200,
         content={"message": "CORS preflight OK"},
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-            "Access-Control-Allow-Headers": "*",
-            "Access-Control-Max-Age": "86400"
-        }
+        headers=response_headers
     )
 
 # Enhanced exception handlers
@@ -404,5 +442,6 @@ async def debug_routes_endpoint():
             "reports.router -> /api/v1",
             "bulk.router -> /api/v1",
             "leads.router -> /api/v1"
-        ]
+        ],
+        "cors_origins": settings.ALLOWED_ORIGINS
     }

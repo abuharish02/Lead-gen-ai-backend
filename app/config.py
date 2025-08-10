@@ -15,12 +15,16 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     ADMIN_EMAIL: str = "theanandsingh76@gmail.com"
     
-    # CORS - Updated to include Vite dev server port
+    # CORS - Fixed Vercel URLs (removed trailing slash and duplicate)
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:3000", 
         "http://127.0.0.1:3000",
         "http://localhost:5173",  # Vite dev server
-        "http://127.0.0.1:5173"   # Vite dev server
+        "http://127.0.0.1:5173",  # Vite dev server
+        "https://lead-gen-ai-frontend.vercel.app",  # Fixed: removed trailing slash
+        # Add additional Vercel preview URLs if needed
+        # "https://lead-gen-ai-frontend-git-main-yourusername.vercel.app",
+        # "https://lead-gen-ai-frontend-123abc.vercel.app",  # Preview deployments
     ]
     
     # File Upload
