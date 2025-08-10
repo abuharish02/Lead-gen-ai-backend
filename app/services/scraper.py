@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import re
 from urllib.parse import urljoin, urlparse
 from typing import Dict, List, Optional
+from datetime import datetime
 
 class WebScraper:
     def __init__(self):
@@ -27,7 +28,8 @@ class WebScraper:
                 'contact_info': self._extract_contact_info(soup),
                 'technologies': self._detect_technologies(response, soup),
                 'images': self._get_images(soup, url),
-                'links': self._get_links(soup, url)
+                'links': self._get_links(soup, url),
+                'scraped_at': datetime.utcnow().isoformat()
             }
         except Exception as e:
             return {'error': str(e), 'url': url}

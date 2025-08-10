@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     # Application
     SECRET_KEY: str
     DEBUG: bool = False
+    ADMIN_EMAIL: str = "theanandsingh76@gmail.com"
     
     # CORS - Updated to include Vite dev server port
     ALLOWED_ORIGINS: List[str] = [

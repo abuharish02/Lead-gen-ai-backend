@@ -1,8 +1,9 @@
 # backend/app/api/health.py
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from datetime import datetime
+from app.utils.auth import get_current_active_user
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_active_user)])
 
 @router.get("/health")
 async def health_check():

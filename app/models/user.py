@@ -31,8 +31,13 @@ class User(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
     email: EmailStr = Field(..., index=True)
     name: str
+    hashed_password: str
     is_active: bool = Field(default=True)
+    is_verified: bool = Field(default=False)
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    last_login: Optional[datetime] = None
+    token_invalidated_at: Optional[datetime] = None
+    last_seen_at: Optional[datetime] = None
     
     class Config:
         populate_by_name = True
@@ -44,6 +49,13 @@ class UserCreate(BaseModel):
     """Model for creating a new user"""
     email: EmailStr
     name: str
+    password: str
+
+
+class UserLogin(BaseModel):
+    """Model for user login"""
+    email: EmailStr
+    password: str
 
 
 class UserResponse(BaseModel):
@@ -52,4 +64,39 @@ class UserResponse(BaseModel):
     email: str
     name: str
     is_active: bool
+    is_verified: bool
     created_at: datetime
+    last_login: Optional[datetime] = None
+    last_seen_at: Optional[datetime] = None
+
+
+class Token(BaseModel):
+    """JWT token response model"""
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    expires_in: int
+
+
+class TokenData(BaseModel):
+    """Token payload data"""
+    email: Optional[str] = None
+    user_id: Optional[str] = None
+
+
+class PasswordReset(BaseModel):
+    """Password reset request model"""
+    email: EmailStr
+
+
+class PasswordChange(BaseModel):
+    """Password change model"""
+    current_password: str
+    new_password: str
+
+
+class UserUpdate(BaseModel):
+    """Model for updating user profile"""
+    name: Optional[str] = None
+    current_password: Optional[str] = None
+    new_password: Optional[str] = None

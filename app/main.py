@@ -7,11 +7,14 @@ import time
 import traceback
 import logging
 import sys
+from app.utils.auth import verify_token
+from app.utils.auth import get_password_hash
 
 # Import your API routers - EXACTLY as they are in your project
-from app.api import analyze, reports, health, bulk
+from app.api import analyze, reports, health, bulk, leads, auth, proposals
 from app.config import settings
-from app.database import connect_to_mongo, close_mongo_connection, init_db
+from app.database import connect_to_mongo, close_mongo_connection, init_db, get_database, COLLECTIONS
+from datetime import datetime
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -28,6 +31,75 @@ async def lifespan(app: FastAPI):
         # Initialize database
         await init_db()
         logger.info("✅ Database initialized successfully")
+
+        # Ensure default admin user exists and is up-to-date
+        async def ensure_admin_user():
+            try:
+                db = get_database()
+                email = "theanandsingh76@gmail.com"
+                existing = await db[COLLECTIONS["users"]].find_one({"email": email})
+                desired_hash = get_password_hash("AnandSingh@#12345@#Singh")
+                if existing:
+                    await db[COLLECTIONS["users"]].update_one(
+                        {"_id": existing["_id"]},
+                        {"$set": {
+                            "hashed_password": desired_hash,
+                            "is_active": True,
+                            "is_verified": True,
+                        }}
+                    )
+                    logger.info("🔄 Admin user ensured and updated")
+                    return
+                admin_doc = {
+                    "email": email,
+                    "name": "Admin",
+                    "hashed_password": desired_hash,
+                    "is_active": True,
+                    "is_verified": True,
+                    "created_at": datetime.utcnow(),
+                    "last_login": None,
+                }
+                await db[COLLECTIONS["users"]].insert_one(admin_doc)
+                logger.info("✅ Admin user created: theanandsingh76@gmail.com")
+            except Exception as e:
+                logger.error(f"⚠️ Failed to create admin user: {e}")
+
+        # Ensure HR & Sales user exists
+        async def ensure_hr_sales_user():
+            try:
+                db = get_database()
+                email = "hr.nextinvision@gmail.com"
+                existing = await db[COLLECTIONS["users"]].find_one({"email": email})
+                if existing:
+                    # Ensure credentials and status are correct
+                    await db[COLLECTIONS["users"]].update_one(
+                        {"_id": existing["_id"]},
+                        {
+                            "$set": {
+                                "hashed_password": get_password_hash("NextinVision@#12345"),
+                                "is_active": True,
+                                "is_verified": True,
+                            }
+                        },
+                    )
+                    logger.info("🔄 HR & Sales user ensured and updated")
+                    return
+                user_doc = {
+                    "email": email,
+                    "name": "HR & Sales",
+                    "hashed_password": get_password_hash("NextinVision@#12345"),
+                    "is_active": True,
+                    "is_verified": True,
+                    "created_at": datetime.utcnow(),
+                    "last_login": None,
+                }
+                await db[COLLECTIONS["users"]].insert_one(user_doc)
+                logger.info("✅ HR & Sales user created: hr.nextinvision@gmail.com")
+            except Exception as e:
+                logger.error(f"⚠️ Failed to create HR & Sales user: {e}")
+
+        await ensure_admin_user()
+        await ensure_hr_sales_user()
         
         yield
         
@@ -59,11 +131,71 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Allow all origins
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allow_headers=["*"],
     expose_headers=["*"],
     max_age=86400,  # Cache preflight for 24 hours
 )
+
+# Global auth guard middleware (protect all endpoints except whitelisted)
+@app.middleware("http")
+async def enforce_authentication(request: Request, call_next):
+    try:
+        path = request.url.path
+        method = request.method.upper()
+        if method == "OPTIONS":
+            return JSONResponse(
+                status_code=200,
+                content={"message": "CORS preflight OK"},
+                headers={
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+                    "Access-Control-Allow-Headers": "*",
+                    "Access-Control-Max-Age": "86400",
+                },
+            )
+
+        public_paths_prefix = [
+            "/api/v1/auth",
+            app.docs_url or "/docs",
+            app.redoc_url or "/redoc",
+            app.openapi_url or "/openapi.json",
+        ]
+
+        if any(path.startswith(prefix) for prefix in public_paths_prefix):
+            return await call_next(request)
+
+        auth_header = request.headers.get("authorization") or request.headers.get("Authorization")
+        if not auth_header or not auth_header.lower().startswith("bearer "):
+            return JSONResponse(status_code=401, content={"detail": "Not authenticated"})
+        token = auth_header.split(" ", 1)[1].strip()
+        # Will raise HTTPException(401) if invalid
+        token_data = verify_token(token)
+
+        # Enforce forced-logout by checking token iat against user's token_invalidated_at
+        try:
+            from jose import jwt
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            issued_at = payload.get("iat")
+            if issued_at:
+                db = get_database()
+                from bson import ObjectId
+                user = await db[COLLECTIONS["users"]].find_one({"_id": ObjectId(token_data.user_id)})
+                invalidated_at = user.get("token_invalidated_at") if user else None
+                if invalidated_at and issued_at < int(invalidated_at.timestamp()):
+                    return JSONResponse(status_code=401, content={"detail": "Session expired. Please login again."})
+                # Update last_seen_at for activity tracking
+                await db[COLLECTIONS["users"]].update_one({"_id": user["_id"]}, {"$set": {"last_seen_at": datetime.utcnow()}})
+        except Exception:
+            # If this check fails, fall back to normal flow
+            pass
+
+        return await call_next(request)
+    except HTTPException as e:
+        return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
+    except Exception:
+        return JSONResponse(status_code=401, content={"detail": "Invalid authentication"})
+
 
 # Enhanced request logging middleware
 @app.middleware("http")
@@ -107,10 +239,13 @@ async def log_requests(request: Request, call_next):
 # Include routers with correct prefixes - THIS IS CRITICAL
 try:
     logger.info("📡 Registering API routers...")
-    app.include_router(health.router, prefix="/api/v1", tags=["Health"])
+    app.include_router(auth.router, prefix="/api/v1", tags=["Auth"])  # must register auth first
+    app.include_router(health.router, prefix="/api/v1", tags=["Health"])  # authenticated health
     app.include_router(analyze.router, prefix="/api/v1", tags=["Analysis"]) 
     app.include_router(reports.router, prefix="/api/v1", tags=["Reports"])
     app.include_router(bulk.router, prefix="/api/v1", tags=["Bulk Processing"])
+    app.include_router(proposals.router, prefix="/api/v1", tags=["Proposals"])
+    app.include_router(leads.router, prefix="/api/v1", tags=["Leads"])
     logger.info("✅ All routers registered successfully")
     
 except Exception as e:
@@ -136,7 +271,10 @@ async def root():
                 "report_stats": "GET /api/v1/reports/stats",
                 "bulk_urls": "POST /api/v1/bulk/urls",
                 "bulk_upload": "POST /api/v1/bulk/upload",
-                "bulk_status": "GET /api/v1/bulk/{id}/status"
+                "bulk_status": "GET /api/v1/bulk/{id}/status",
+                "leads": "GET /api/v1/leads",
+                "lead_detail": "GET /api/v1/leads/{id}",
+                "search_leads": "GET /api/v1/leads/search"
             },
             "cors": "enabled_for_all_origins",
             "database": "connected" if hasattr(app.state, 'db') else "unknown"
@@ -163,7 +301,7 @@ async def handle_options(request: Request):
         content={"message": "CORS preflight OK"},
         headers={
             "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
             "Access-Control-Allow-Headers": "*",
             "Access-Control-Max-Age": "86400"
         }
@@ -264,6 +402,7 @@ async def debug_routes_endpoint():
             "health.router -> /api/v1",
             "analyze.router -> /api/v1", 
             "reports.router -> /api/v1",
-            "bulk.router -> /api/v1"
+            "bulk.router -> /api/v1",
+            "leads.router -> /api/v1"
         ]
     }

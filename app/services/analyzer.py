@@ -28,8 +28,15 @@ class WebsiteAnalyzer:
             # Step 4: Analyze with Gemini using enhanced prompt
             analysis = self.gemini.analyze_website_content(enhanced_prompt)  # Now passes RAG-enhanced prompt!
             
+            # Fallback: if Gemini failed or returned incomplete structure, synthesize from scraped + RAG
+            if not analysis or 'error' in analysis or not self._is_analysis_complete(analysis):
+                analysis = self._generate_fallback_analysis(scraped_data, rag_analysis)
+            
             # Step 5: Post-process and enrich with RAG insights
             final_analysis = self._enrich_analysis_with_rag(analysis, scraped_data, rag_analysis)
+            
+            # Step 6: Normalize analysis to ensure consistent fields
+            final_analysis = self._normalize_analysis(final_analysis, scraped_data, rag_analysis)
             
             return final_analysis
             
@@ -183,6 +190,59 @@ Use the provided context to make your analysis more targeted and relevant. Focus
         enriched_analysis['knowledge_base_info'] = kb_stats
         
         return enriched_analysis
+
+    def _is_analysis_complete(self, analysis: Dict[str, Any]) -> bool:
+        required_fields = [
+            'company_name', 'industry', 'business_purpose', 'pain_points', 'recommendations',
+            'digital_maturity_score', 'urgency_score'
+        ]
+        for field in required_fields:
+            if field not in analysis or analysis.get(field) in [None, '', [], {}]:
+                return False
+        return True
+
+    def _generate_fallback_analysis(self, scraped: Dict[str, Any], rag: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a reasonable analysis when LLM parsing fails. Uses scraped title/content and RAG context."""
+        title = scraped.get('title') or scraped.get('page_title') or ''
+        company_guess = title.split('-')[0].strip() if title else 'N/A'
+        detected_industry = rag.get('detected_industry') or 'Unknown'
+        pain_points = []
+        # derive pain points from industry context if present
+        for ctx in rag.get('industry_context', []):
+            meta = ctx.get('metadata', {})
+            if isinstance(meta.get('pain_points'), list):
+                pain_points.extend(meta['pain_points'][:3])
+        if not pain_points:
+            pain_points = [
+                'Limited online presence',
+                'Performance optimization needed',
+                'Missing analytics-driven decision making'
+            ]
+        recommendations = []
+        for ctx in rag.get('technology_context', []):
+            meta = ctx.get('metadata', {})
+            if isinstance(meta.get('opportunities'), list):
+                recommendations.extend(meta['opportunities'][:3])
+        if not recommendations:
+            recommendations = [
+                'Improve website performance and SEO',
+                'Implement analytics and conversion tracking',
+                'Modernize tech stack where feasible'
+            ]
+        return {
+            'company_name': company_guess if company_guess else 'N/A',
+            'industry': detected_industry if detected_industry else 'Unknown',
+            'business_purpose': scraped.get('description') or scraped.get('content', '')[:160] or 'N/A',
+            'company_size': 'unknown',
+            'technologies': scraped.get('technologies', []),
+            'contact_info': scraped.get('contact_info', {}),
+            'pain_points': pain_points,
+            'recommendations': recommendations,
+            'digital_maturity_score': 5.0,
+            'urgency_score': 5.0,
+            'potential_value': 'To be determined',
+            'outreach_strategy': 'Introduce value with quick wins and an assessment call'
+        }
     
     def _extract_relevant_services(self, rag_analysis: Dict) -> List[str]:
         """Extract relevant services from RAG analysis"""
@@ -246,3 +306,38 @@ Use the provided context to make your analysis more targeted and relevant. Focus
             score += min(avg_similarity, 0.2)  
         
         return min(score, 1.0)  
+
+    def _normalize_analysis(self, analysis: Dict[str, Any], scraped: Dict[str, Any], rag: Dict[str, Any]) -> Dict[str, Any]:
+        """Ensure the final analysis has a complete structure even when the LLM response is partial."""
+        normalized = analysis.copy()
+
+        def ensure(key: str, default):
+            if key not in normalized or normalized.get(key) in [None, '', [], {}]:
+                normalized[key] = default
+
+        # Company and industry
+        title = scraped.get('title') or scraped.get('page_title') or ''
+        company_guess = title.split('-')[0].strip() if title else 'N/A'
+        ensure('company_name', company_guess)
+        ensure('industry', rag.get('detected_industry') or 'Unknown')
+
+        # Scores
+        ensure('digital_maturity_score', 5.0)
+        ensure('urgency_score', 5.0)
+
+        # Purpose and size
+        ensure('business_purpose', scraped.get('description') or scraped.get('content', '')[:160] or 'N/A')
+        ensure('company_size', 'unknown')
+
+        # Technologies
+        if not normalized.get('technologies'):
+            normalized['technologies'] = scraped.get('technologies', [])
+
+        # Contact info
+        ensure('contact_info', scraped.get('contact_info') or {})
+
+        # Lists
+        ensure('pain_points', ['Limited online presence', 'Performance optimization needed'])
+        ensure('recommendations', ['Improve website performance and SEO', 'Implement analytics and tracking'])
+
+        return normalized

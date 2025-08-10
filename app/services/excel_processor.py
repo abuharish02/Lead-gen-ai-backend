@@ -2,6 +2,7 @@
 import pandas as pd
 from typing import List, Dict, Any
 import asyncio
+import io
 from .analyzer import WebsiteAnalyzer
 
 class ExcelProcessor:

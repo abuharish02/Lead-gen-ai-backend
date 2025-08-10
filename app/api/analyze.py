@@ -7,8 +7,9 @@ from app.database import get_db, COLLECTIONS
 from datetime import datetime
 from bson import ObjectId
 import asyncio
+from app.utils.auth import get_current_active_user
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_active_user)])
 
 @router.post("/analyze", response_model=dict)
 async def analyze_website(
@@ -19,11 +20,19 @@ async def analyze_website(
     try:
         # Check if analysis already exists
         existing = await db[COLLECTIONS["analyses"]].find_one({"url": request.url})
-        if existing and existing.get("status") == "completed":
-            return {
-                "message": "Analysis already exists", 
-                "analysis_id": str(existing["_id"])
+        if existing:
+            # Always return a consistent response shape
+            existing_status = existing.get("status", "processing")
+            response_payload = {
+                "analysis_id": str(existing["_id"]),
+                "status": existing_status,
             }
+            if existing_status == "completed":
+                response_payload["result"] = existing.get("result_data")
+                response_payload["message"] = "Analysis already exists"
+            else:
+                response_payload["message"] = "Analysis in progress"
+            return response_payload
         
         # Create new analysis record
         analysis_data = {
@@ -64,7 +73,7 @@ async def analyze_website(
         return {
             "analysis_id": str(analysis_id),
             "status": update_data["status"],
-            "result": analysis_result
+            "result": analysis_result if update_data["status"] == "completed" else None
         }
         
     except Exception as e:

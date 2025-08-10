@@ -6,8 +6,9 @@ from app.services.excel_processor import ExcelProcessor
 from app.database import get_db, COLLECTIONS
 from bson import ObjectId
 from datetime import datetime
+from app.utils.auth import get_current_active_user
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_active_user)])
 
 @router.get("/reports")
 async def list_reports(skip: int = 0, limit: int = 100, db = Depends(get_db)):
@@ -49,7 +50,18 @@ async def download_pdf_report(analysis_id: str, db = Depends(get_db)):
     
     try:
         generator = ReportGenerator()
-        pdf_data = generator.generate_pdf_report(analysis.get("result_data", {}))
+        result_data = analysis.get("result_data", {}) or {}
+        # Merge top-level metadata with result data for comprehensive PDF
+        merged = {
+            **result_data,
+            "url": analysis.get("url", result_data.get("url")),
+            "company_name": analysis.get("company_name") or result_data.get("company_name"),
+            "industry": analysis.get("industry") or result_data.get("industry"),
+            "status": analysis.get("status"),
+            "created_at": analysis.get("created_at"),
+            "updated_at": analysis.get("updated_at"),
+        }
+        pdf_data = generator.generate_pdf_report(merged)
         
         return Response(
             content=pdf_data,

@@ -28,8 +28,8 @@ class GeminiClient:
             response = self.model.generate_content(prompt)
             return self._parse_analysis_response_robust(response.text)
         except Exception as e:
-            logger.info(f"Extracted structured data: {result['company_name']}, {result['industry']}")
-        return result
+            logger.error(f"Gemini analysis error: {str(e)}")
+            return {'error': f'Gemini analysis failed: {str(e)}'}
     
     def _parse_json_response(self, response_text: str) -> Dict[str, Any]:
         """Parse JSON response for outreach and proposal content"""
@@ -210,12 +210,12 @@ Test the API connection. Respond with ONLY this JSON:
                 }
                 
         except Exception as e:
+            logger.error(f"Gemini API error: {str(e)}")
             return {
                 'status': 'error',
                 'error': str(e),
                 'model': settings.GEMINI_MODEL
-            }.error(f"Gemini API error: {str(e)}")
-            return {'error': f'Gemini API error: {str(e)}'}
+            }
     
     def _enhance_prompt_for_json_output(self, original_prompt: str) -> str:
         """Enhance existing prompt to ensure JSON output"""

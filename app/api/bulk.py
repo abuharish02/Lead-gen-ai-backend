@@ -1,5 +1,5 @@
 # backend/app/api/bulk.py
-from fastapi import APIRouter, HTTPException, UploadFile, File, BackgroundTasks
+from fastapi import APIRouter, HTTPException, UploadFile, File, BackgroundTasks, Depends
 from typing import List, Dict, Any
 from bson import ObjectId
 from datetime import datetime
@@ -12,8 +12,9 @@ import uuid
 from app.database import get_database
 from app.models.analysis import Analysis
 from app.services.analyzer import WebsiteAnalyzer
+from app.utils.auth import get_current_active_user
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_active_user)])
 
 # In-memory tracking for bulk operations (consider Redis for production)
 bulk_operations = {}
@@ -170,14 +171,14 @@ async def get_bulk_results(bulk_id: str):
             analysis = await db.analyses.find_one({"_id": ObjectId(analysis_id)})
             if analysis:
                 results.append({
-                    "analysis_id": str(analysis["_id"]),
-                    "url": analysis["url"],
-                    "status": analysis["status"],
-                    "company_name": analysis.get("company_name"),
-                    "industry": analysis.get("industry"),
-                    "result_data": analysis.get("result_data"),
-                    "created_at": analysis["created_at"],
-                    "updated_at": analysis["updated_at"]
+                    "analysis_id": str(analysis.get("_id")),
+                    "url": analysis.get("url"),
+                    "status": analysis.get("status"),
+                    "company_name": analysis.get("company_name") or (analysis.get("result_data") or {}).get("company_name"),
+                    "industry": analysis.get("industry") or (analysis.get("result_data") or {}).get("industry"),
+                    "result_data": analysis.get("result_data") or {},
+                    "created_at": analysis.get("created_at"),
+                    "updated_at": analysis.get("updated_at")
                 })
         
         return {
@@ -229,7 +230,7 @@ async def process_bulk_analyses(bulk_id: str, urls: List[str], analysis_ids: Lis
                     operation["failed"] += 1
                 else:
                     # Handle successful analysis
-                    result_data = analysis_result.get('result', {})
+                    result_data = analysis_result
                     await db.analyses.update_one(
                         {"_id": ObjectId(analysis_id)},
                         {
@@ -446,19 +447,18 @@ async def export_bulk_results(bulk_id: str, format: str = "json"):
         for analysis_id in operation["analysis_ids"]:
             analysis = await db.analyses.find_one({"_id": ObjectId(analysis_id)})
             if analysis:
-                result_data = analysis.get("result_data", {})
-                
+                result_data = analysis.get("result_data") or {}
                 flat_result = {
-                    "url": analysis["url"],
-                    "status": analysis["status"],
-                    "company_name": analysis.get("company_name", ""),
-                    "industry": analysis.get("industry", ""),
+                    "url": analysis.get("url", ""),
+                    "status": analysis.get("status", ""),
+                    "company_name": analysis.get("company_name") or result_data.get("company_name", ""),
+                    "industry": analysis.get("industry") or result_data.get("industry", ""),
                     "business_purpose": result_data.get("business_purpose", ""),
                     "company_size": result_data.get("company_size", ""),
                     "digital_maturity_score": result_data.get("digital_maturity_score", 0),
                     "urgency_score": result_data.get("urgency_score", 0),
                     "potential_value": result_data.get("potential_value", ""),
-                    "created_at": analysis["created_at"].isoformat(),
+                    "created_at": (analysis.get("created_at").isoformat() if analysis.get("created_at") else ""),
                 }
                 results.append(flat_result)
         

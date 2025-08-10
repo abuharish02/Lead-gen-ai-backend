@@ -1,0 +1,47 @@
+# Cloud Run service configuration for backend
+# Fill in the env var values below before deploying.
+
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: website-analyzer-backend
+  annotations:
+    run.googleapis.com/ingress: all
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: "10"
+    spec:
+      containers:
+        - image: gcr.io/subtle-lambda-466909-u2/website-analyzer-backend:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: MONGODB_URL
+              value: "REPLACE_WITH_MONGODB_URI"
+            - name: DATABASE_NAME
+              value: "lead-gen-ai-db"
+            - name: GEMINI_API_KEY
+              value: "REPLACE_WITH_GEMINI_KEY"
+            - name: GEMINI_MODEL
+              value: "gemini-1.5-flash"
+            - name: SECRET_KEY
+              value: "REPLACE_WITH_SECRET_KEY"
+            - name: DEBUG
+              value: "False"
+            - name: MAX_FILE_SIZE
+              value: "52428800"
+            - name: UPLOAD_DIR
+              value: "data/uploads"
+            - name: KNOWLEDGE_BASE_DIR
+              value: "data/knowledge_base"
+            - name: EMBEDDING_MODEL
+              value: "sentence-transformers/all-MiniLM-L6-v2"
+            - name: PYTHONPATH
+              value: "/app"
+  traffic:
+    - latestRevision: true
+      percent: 100
+
+
