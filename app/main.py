@@ -1,8 +1,9 @@
 """Main FastAPI application for Website Analyzer"""
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from contextlib import asynccontextmanager
+import re
 import time
 import traceback
 import logging
@@ -15,6 +16,7 @@ from app.api import analyze, reports, health, bulk, leads, auth, proposals
 from app.config import settings
 from app.database import connect_to_mongo, close_mongo_connection, init_db, get_database, COLLECTIONS
 from datetime import datetime
+from typing import Optional
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -130,19 +132,10 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app$",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allow_headers=[
-        "Accept",
-        "Accept-Language", 
-        "Content-Language",
-        "Content-Type",
-        "Authorization",
-        "X-Requested-With",
-        "Origin",
-        "Access-Control-Request-Method",
-        "Access-Control-Request-Headers",
-    ],
+    allow_headers=["*"],
     expose_headers=["*"],
     max_age=86400,  # Cache preflight for 24 hours
 )
@@ -154,9 +147,25 @@ async def enforce_authentication(request: Request, call_next):
         path = request.url.path
         method = request.method.upper()
         
-        # Handle CORS preflight requests: let CORSMiddleware set headers
+        # Explicitly handle CORS preflight with correct headers for allowed origins
         if method == "OPTIONS":
-            return JSONResponse(status_code=200, content={"message": "CORS preflight OK"})
+            origin = request.headers.get("origin")
+            request_headers = request.headers.get("access-control-request-headers", "*")
+            response_headers = {
+                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+                "Access-Control-Allow-Headers": request_headers,
+                "Access-Control-Max-Age": "86400",
+            }
+            is_allowed = bool(origin) and (
+                origin in settings.ALLOWED_ORIGINS or re.match(r"https://.*\\.vercel\\.app$", origin)
+            )
+            if is_allowed:
+                response_headers["Access-Control-Allow-Origin"] = origin
+                response_headers["Access-Control-Allow-Credentials"] = "true"
+                response_headers["Vary"] = "Origin"
+                return Response(status_code=204, headers=response_headers)
+            # Not an allowed origin: let the request continue (will 404/405 without CORS headers)
+            return await call_next(request)
 
         public_paths_prefix = [
             "/api/v1/auth",
@@ -215,6 +224,23 @@ async def log_requests(request: Request, call_next):
     
     try:
         response = await call_next(request)
+
+        # Ensure CORS headers are present on all responses for allowed origins
+        origin = request.headers.get("origin")
+        if origin:
+            try:
+                is_allowed = (
+                    origin in settings.ALLOWED_ORIGINS or
+                    re.match(r"https://.*\\.vercel\\.app$", origin) is not None
+                )
+                if is_allowed:
+                    response.headers.setdefault("Access-Control-Allow-Origin", origin)
+                    response.headers.setdefault("Access-Control-Allow-Credentials", "true")
+                    # Don't over-set allow headers/methods here for non-OPTIONS
+                    vary_val = response.headers.get("Vary")
+                    response.headers["Vary"] = (vary_val + ", Origin") if vary_val else "Origin"
+            except Exception:
+                pass
         process_time = time.time() - start_time
         
         # Log response
