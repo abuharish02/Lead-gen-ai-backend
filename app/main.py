@@ -154,30 +154,9 @@ async def enforce_authentication(request: Request, call_next):
         path = request.url.path
         method = request.method.upper()
         
-        # Handle CORS preflight requests
+        # Handle CORS preflight requests: let CORSMiddleware set headers
         if method == "OPTIONS":
-            origin = request.headers.get("origin")
-            response_headers = {
-                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-                "Access-Control-Allow-Headers": "Accept, Accept-Language, Content-Language, Content-Type, Authorization, X-Requested-With, Origin",
-                "Access-Control-Max-Age": "86400",
-            }
-            
-            # Set specific origin if it's in allowed list, otherwise allow all for development
-            if origin and origin in settings.ALLOWED_ORIGINS:
-                response_headers["Access-Control-Allow-Origin"] = origin
-            elif settings.DEBUG:
-                response_headers["Access-Control-Allow-Origin"] = "*"
-            else:
-                response_headers["Access-Control-Allow-Origin"] = settings.ALLOWED_ORIGINS[0]
-                
-            response_headers["Access-Control-Allow-Credentials"] = "true"
-            
-            return JSONResponse(
-                status_code=200,
-                content={"message": "CORS preflight OK"},
-                headers=response_headers,
-            )
+            return JSONResponse(status_code=200, content={"message": "CORS preflight OK"})
 
         public_paths_prefix = [
             "/api/v1/auth",
@@ -317,33 +296,7 @@ async def simple_health():
         "timestamp": time.time()
     }
 
-# Handle all preflight OPTIONS requests
-@app.options("/{full_path:path}")
-async def handle_options(request: Request):
-    logger.info(f"🔄 CORS preflight for: {request.url.path}")
-    origin = request.headers.get("origin")
-    
-    response_headers = {
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-        "Access-Control-Allow-Headers": "Accept, Accept-Language, Content-Language, Content-Type, Authorization, X-Requested-With, Origin",
-        "Access-Control-Max-Age": "86400"
-    }
-    
-    # Set appropriate origin header
-    if origin and origin in settings.ALLOWED_ORIGINS:
-        response_headers["Access-Control-Allow-Origin"] = origin
-    elif settings.DEBUG:
-        response_headers["Access-Control-Allow-Origin"] = "*"
-    else:
-        response_headers["Access-Control-Allow-Origin"] = settings.ALLOWED_ORIGINS[0]
-        
-    response_headers["Access-Control-Allow-Credentials"] = "true"
-    
-    return JSONResponse(
-        status_code=200,
-        content={"message": "CORS preflight OK"},
-        headers=response_headers
-    )
+# Let CORSMiddleware handle all preflight OPTIONS requests globally
 
 # Enhanced exception handlers
 @app.exception_handler(Exception)
