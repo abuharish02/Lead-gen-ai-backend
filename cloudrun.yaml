@@ -16,7 +16,7 @@ spec:
       containers:
         - image: gcr.io/subtle-lambda-466909-u2/website-analyzer-backend:latest
           ports:
-            - containerPort: 8000
+            - containerPort: 8080
           env:
             - name: MONGODB_URL
               value: "REPLACE_WITH_MONGODB_URI"
