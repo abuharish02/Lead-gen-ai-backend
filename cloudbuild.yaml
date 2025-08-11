@@ -1,7 +1,7 @@
 # cloudbuild.yaml (for Google Cloud Build → Cloud Run deploy)
 substitutions:
   _SERVICE_NAME: website-analyzer-backend
-  _REGION: us-central1
+  _REGION: asia-southeast1
 
 steps:
   # Build the Docker image
@@ -46,4 +46,4 @@ options:
   logging: CLOUD_LOGGING_ONLY
   machineType: 'E2_HIGHCPU_8'
 
-timeout: '1200s'
+timeout: '12000s'

@@ -28,7 +28,17 @@ async def lifespan(app: FastAPI):
     try:
         logger.info("🚀 Starting Website Analyzer API...")
         logger.info(f"📍 Environment: {'Development' if settings.DEBUG else 'Production'}")
-        logger.info(f"🔧 Database: {settings.MONGODB_URL}")
+        # Avoid leaking DB credentials in logs; mask user/pass if present
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(settings.MONGODB_URL)
+            safe_netloc = parsed.hostname or 'unknown-host'
+            if parsed.port:
+                safe_netloc += f":{parsed.port}"
+            safe_db = (parsed.path or '').lstrip('/') or settings.DATABASE_NAME
+            logger.info(f"🔧 Database: mongodb://{safe_netloc}/{safe_db}")
+        except Exception:
+            logger.info("🔧 Database: [redacted]")
         
         # Initialize database
         await init_db()
