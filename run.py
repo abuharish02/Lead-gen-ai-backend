@@ -1,6 +1,5 @@
-"""Production server runner for Website Analyzer"""
+"""Development server runner for Website Analyzer"""
 import uvicorn
-import os
 from app.config import settings
 
 if __name__ == "__main__":
@@ -11,13 +10,11 @@ if __name__ == "__main__":
     print(f"🤖 Gemini Model: {settings.GEMINI_MODEL}")
     print("-" * 50)
     
-    port = int(os.environ.get("PORT", 8080))
-    host = "0.0.0.0"
     
     uvicorn.run(
         "app.main:app",
-        host=host,
-        port=port,
+        host="127.0.0.1",
+        port=8000,
         reload=settings.DEBUG,
         log_level="info" if not settings.DEBUG else "debug"
     )
