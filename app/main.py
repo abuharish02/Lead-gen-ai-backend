@@ -178,10 +178,14 @@ async def enforce_authentication(request: Request, call_next):
             return await call_next(request)
 
         public_paths_prefix = [
-            "/api/v1/auth",
-            app.docs_url or "/docs",
-            app.redoc_url or "/redoc",
-            app.openapi_url or "/openapi.json",
+            "/",  # Root endpoint
+            "/health",  # Health check
+            "/api/v1/auth",  # Auth endpoints
+            app.docs_url or "/docs",  # API docs
+            app.redoc_url or "/redoc",  # ReDoc
+            app.openapi_url or "/openapi.json",  # OpenAPI spec
+            "/debug",  # Debug endpoints
+            "/api/v1/cors-test",  # CORS test endpoint
         ]
 
         if any(path.startswith(prefix) for prefix in public_paths_prefix):
