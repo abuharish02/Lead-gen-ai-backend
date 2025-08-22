@@ -37,8 +37,8 @@ class Settings(BaseSettings):
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
     
     # Server Configuration
-    HOST: str = "0.0.0.0"
-    PORT: int = 8000
+    HOST: str = "127.0.0.1"
+    PORT: int = 8080
     
     class Config:
         env_file = ".env"
