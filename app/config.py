@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from typing import Optional, List
+from pydantic import field_validator
 
 class Settings(BaseSettings):
     # MongoDB Configuration
@@ -15,12 +16,25 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     ADMIN_EMAIL: str = "theanandsingh76@gmail.com"
     
-    # CORS - Production GCP URLs only
+    # CORS - This will now properly parse from environment variable
     ALLOWED_ORIGINS: List[str] = [
-        "https://lead-gen.nextinvision.com",  # Custom domain
-        "https://lead-gen-ai-frontend-595294038624.asia-southeast1.run.app",  # Cloud Run frontend
-        "https://lead-gen-ai-frontend-595294038624.asia-south2.run.app",  # Alternative Cloud Run URL
+        "https://lead-gen.nextinvision.com",
+        "https://lead-gen-ai-frontend-595294038624.asia-southeast1.run.app", 
+        "https://lead-gen-ai-frontend-595294038624.asia-south2.run.app",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
     ]
+    
+    @field_validator('ALLOWED_ORIGINS', mode='before')
+    @classmethod
+    def parse_cors_origins(cls, v):
+        """Parse ALLOWED_ORIGINS from comma-separated string or list"""
+        if isinstance(v, str):
+            # Handle comma-separated string from environment variable
+            return [origin.strip() for origin in v.split(',') if origin.strip()]
+        elif isinstance(v, list):
+            return v
+        return v
     
     # File Upload
     MAX_FILE_SIZE: int = 50 * 1024 * 1024  # 50MB
@@ -31,8 +45,8 @@ class Settings(BaseSettings):
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
     
     # Server Configuration - Production GCP
-    HOST: str = "0.0.0.0"  # Allow external connections
-    PORT: int = 8080  # Cloud Run standard port
+    HOST: str = "0.0.0.0"
+    PORT: int = 8080
     
     class Config:
         env_file = ".env"
