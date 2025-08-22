@@ -15,6 +15,6 @@ if __name__ == "__main__":
         "app.main:app",
         host=settings.HOST,
         port=settings.PORT,
-        reload=settings.DEBUG,
-        log_level="info" if not settings.DEBUG else "debug"
+        reload=False,  # Disable reload for production
+        log_level="info"  # Production log level
     )

@@ -15,17 +15,11 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     ADMIN_EMAIL: str = "theanandsingh76@gmail.com"
     
-    # CORS - Fixed Vercel URLs (removed trailing slash and duplicate)
+    # CORS - Production GCP URLs only
     ALLOWED_ORIGINS: List[str] = [
-        "http://localhost:3000", 
-        "http://127.0.0.1:3000",
-        "http://localhost:5173",  # Vite dev server
-        "http://127.0.0.1:5173",  # Vite dev server
-        "https://lead-gen-ai-frontend.vercel.app",  # Fixed: removed trailing slash
-        "https://lead-gen-ai-frontend-595294038624.asia-south2.run.app",
-        # Add additional Vercel preview URLs if needed
-        # "https://lead-gen-ai-frontend-git-main-yourusername.vercel.app",
-        # "https://lead-gen-ai-frontend-123abc.vercel.app",  # Preview deployments
+        "https://lead-gen.nextinvision.com",  # Custom domain
+        "https://lead-gen-ai-frontend-595294038624.asia-southeast1.run.app",  # Cloud Run frontend
+        "https://lead-gen-ai-frontend-595294038624.asia-south2.run.app",  # Alternative Cloud Run URL
     ]
     
     # File Upload
@@ -36,9 +30,9 @@ class Settings(BaseSettings):
     KNOWLEDGE_BASE_DIR: str = "data/knowledge_base"
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
     
-    # Server Configuration
-    HOST: str = "127.0.0.1"
-    PORT: int = 8080
+    # Server Configuration - Production GCP
+    HOST: str = "0.0.0.0"  # Allow external connections
+    PORT: int = 8080  # Cloud Run standard port
     
     class Config:
         env_file = ".env"
