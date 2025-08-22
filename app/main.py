@@ -142,7 +142,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
-    allow_origin_regex=r"https://.*\.vercel\.app$",
+    allow_origin_regex=r"https://.*\.(vercel\.app|run\.app)$",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allow_headers=["*"],
@@ -167,7 +167,7 @@ async def enforce_authentication(request: Request, call_next):
                 "Access-Control-Max-Age": "86400",
             }
             is_allowed = bool(origin) and (
-                origin in settings.ALLOWED_ORIGINS or re.match(r"https://.*\\.vercel\\.app$", origin)
+                origin in settings.ALLOWED_ORIGINS or re.match(r"https://.*\\.(vercel\\.app|run\\.app)$", origin)
             )
             if is_allowed:
                 response_headers["Access-Control-Allow-Origin"] = origin
@@ -241,7 +241,7 @@ async def log_requests(request: Request, call_next):
             try:
                 is_allowed = (
                     origin in settings.ALLOWED_ORIGINS or
-                    re.match(r"https://.*\\.vercel\\.app$", origin) is not None
+                    re.match(r"https://.*\\.(vercel\\.app|run\\.app)$", origin) is not None
                 )
                 if is_allowed:
                     response.headers.setdefault("Access-Control-Allow-Origin", origin)
