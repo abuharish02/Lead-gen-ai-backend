@@ -167,7 +167,7 @@ async def enforce_authentication(request: Request, call_next):
                 "Access-Control-Max-Age": "86400",
             }
             is_allowed = bool(origin) and (
-                origin in settings.ALLOWED_ORIGINS or re.match(r"https://.*\\.(vercel\\.app|run\\.app)$", origin)
+                origin in settings.ALLOWED_ORIGINS or re.match(r"https://.*\.(vercel\.app|run\.app)$", origin)
             )
             if is_allowed:
                 response_headers["Access-Control-Allow-Origin"] = origin
@@ -241,15 +241,18 @@ async def log_requests(request: Request, call_next):
             try:
                 is_allowed = (
                     origin in settings.ALLOWED_ORIGINS or
-                    re.match(r"https://.*\\.(vercel\\.app|run\\.app)$", origin) is not None
+                    re.match(r"https://.*\.(vercel\.app|run\.app)$", origin) is not None
                 )
                 if is_allowed:
-                    response.headers.setdefault("Access-Control-Allow-Origin", origin)
-                    response.headers.setdefault("Access-Control-Allow-Credentials", "true")
+                    response.headers["Access-Control-Allow-Origin"] = origin
+                    response.headers["Access-Control-Allow-Credentials"] = "true"
+                    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+                    response.headers["Access-Control-Allow-Headers"] = "*"
                     # Don't over-set allow headers/methods here for non-OPTIONS
                     vary_val = response.headers.get("Vary")
                     response.headers["Vary"] = (vary_val + ", Origin") if vary_val else "Origin"
-            except Exception:
+            except Exception as e:
+                logger.error(f"CORS header setting error: {e}")
                 pass
         process_time = time.time() - start_time
         
@@ -322,6 +325,25 @@ async def root():
     except Exception as e:
         logger.error(f"Error in root endpoint: {e}")
         return {"message": "API Running", "error": str(e)}
+
+# CORS test endpoint
+@app.options("/api/v1/cors-test")
+async def cors_test_options():
+    """Test CORS preflight request"""
+    return Response(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Max-Age": "86400",
+        }
+    )
+
+@app.get("/api/v1/cors-test")
+async def cors_test():
+    """Test CORS response"""
+    return {"message": "CORS is working", "timestamp": time.time()}
 
 # Simple health check (without prefix)
 @app.get("/health")
@@ -432,5 +454,27 @@ async def debug_routes_endpoint():
             "bulk.router -> /api/v1",
             "leads.router -> /api/v1"
         ],
-        "cors_origins": settings.ALLOWED_ORIGINS
+        "cors_origins": settings.ALLOWED_ORIGINS,
+        "cors_enabled": True,
+        "cors_middleware": "CORSMiddleware + Custom CORS handling"
+    }
+
+@app.get("/debug/cors")
+async def debug_cors():
+    """Debug CORS configuration"""
+    return {
+        "cors_enabled": True,
+        "allowed_origins": settings.ALLOWED_ORIGINS,
+        "origin_regex": r"https://.*\.(vercel\.app|run\.app)$",
+        "allow_credentials": True,
+        "allow_methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+        "allow_headers": ["*"],
+        "expose_headers": ["*"],
+        "max_age": 86400,
+        "middleware_order": [
+            "CORSMiddleware (FastAPI)",
+            "Custom CORS handling (OPTIONS)",
+            "Authentication middleware",
+            "Request logging"
+        ]
     }
