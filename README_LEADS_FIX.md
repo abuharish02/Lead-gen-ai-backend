@@ -35,12 +35,12 @@ python test_leads.py
 1. **Restart the backend server** using `python run.py`
 2. **Wait for the server to start** - you should see:
    ```
-   INFO: Uvicorn running on http://127.0.0.1:8080
+   INFO: Uvicorn running on http://127.0.0.1:8000
    INFO: Application startup complete.
    ```
 3. **Test the leads endpoint**:
    ```bash
-   curl http://127.0.0.1:8080/api/v1/leads
+   curl http://127.0.0.1:8000/api/v1/leads
    ```
 4. **Refresh your frontend** - the leads page should now work!
 
@@ -66,7 +66,7 @@ The routes are correctly ordered in `backend/app/api/leads.py`:
 ## 🎯 Expected Result
 
 After restarting the server, you should see:
-- ✅ Backend running on http://127.0.0.1:8080
+- ✅ Backend running on http://127.0.0.1:8000
 - ✅ Leads page loads without 405 errors
 - ✅ API calls to `/api/v1/leads` work properly
 - ✅ Search and filtering functionality works

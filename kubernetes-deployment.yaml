@@ -19,7 +19,7 @@ spec:
       - name: backend
         image: gcr.io/PROJECT_ID/website-analyzer-backend:latest
         ports:
-        - containerPort: 8080
+        - containerPort: 8000
         env:
         - name: MONGODB_URL
           valueFrom:
@@ -52,13 +52,13 @@ spec:
         livenessProbe:
           httpGet:
             path: /api/v1/health
-            port: 8080
+            port: 8000
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /api/v1/health
-            port: 8080
+            port: 8000
           initialDelaySeconds: 5
           periodSeconds: 5
 
@@ -73,5 +73,5 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 8080
+      targetPort: 8000
   type: LoadBalancer

@@ -25,9 +25,9 @@ COPY . .
 # Run as root (simpler for Cloud Build/Run). Consider non-root later if needed.
 
 # Expose default Cloud Run port (doc only)
-EXPOSE 8080
+EXPOSE 8000
 
 # Note: Cloud Run manages health internally; no container HEALTHCHECK needed
 
 # Command to run the application; honor Cloud Run PORT
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

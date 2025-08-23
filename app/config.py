@@ -46,7 +46,7 @@ class Settings(BaseSettings):
     
     # Server Configuration - Production GCP
     HOST: str = "0.0.0.0"
-    PORT: int = 8080
+    PORT: int = 8000
     
     class Config:
         env_file = ".env"
