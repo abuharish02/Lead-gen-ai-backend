@@ -1,10 +1,13 @@
+# Dockerfile
 FROM python:3.11
 
 # Set working directory
 WORKDIR /app
 
-# Ensure Python can import the `app` package regardless of CWD
+# Ensure Python can import the app package regardless of CWD
 ENV PYTHONPATH=/app
+
+# No extra OS packages to simplify build in Cloud Build
 
 # Copy requirements first for better caching
 COPY requirements.txt .
@@ -19,8 +22,12 @@ RUN mkdir -p data/uploads data/knowledge_base
 # Copy application code
 COPY . .
 
+# Run as root (simpler for Cloud Build/Run). Consider non-root later if needed.
+
 # Expose default Cloud Run port (doc only)
 EXPOSE 8000
 
-# FIXED: Use Python to handle PORT environment variable properly
-CMD ["python", "-c", "import os; import uvicorn; uvicorn.run('app.main:app', host='0.0.0.0', port=int(os.environ.get('PORT', 8000)))"]
+# Note: Cloud Run manages health internally; no container HEALTHCHECK needed
+
+# Command to run the application; honor Cloud Run PORT
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
